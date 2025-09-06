@@ -17,12 +17,15 @@ import ExpiringIngredients from "../components/ExpiringIngredients";
 import MyIngredientsGrid from "../components/MyIngredientsGrid";
 import { colors } from "../../../theme/colors";
 import { useIngredientsStore } from "../store/ingredientsStore";
+import { useNavigation } from "@react-navigation/native";
 
 if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
 export default function RecipeScreen() {
+  const navigation = useNavigation();
+
   const [mode, setMode] = useState("register"); // "register" | "mine"
   const ingredients = useIngredientsStore((s) => s.ingredients);
 
@@ -60,7 +63,7 @@ export default function RecipeScreen() {
 
             <ExpiringIngredients
               items={expiringSoon}
-              onSeeAll={() => Alert.alert("전체 재료 보기", "나중에 리스트 화면으로 이동")}
+              onSeeAll={() => setMode("mine")}
             />
           </ScrollView>
         ) : (

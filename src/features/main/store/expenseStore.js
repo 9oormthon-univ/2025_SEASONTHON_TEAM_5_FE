@@ -1,3 +1,4 @@
+// 📂 src/features/expense/store/expenseStore.js
 import { create } from "zustand";
 import { persist, createJSONStorage } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -5,7 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 export const useExpenseStore = create(
   persist(
     (set, get) => ({
-      budget: 2000000,          // 이번 달 예산(필요 시 변경 화면 추가)
+      budget: 2000000,          // 이번 달 예산
       expenses: [],             // {id, title, category, amount, date, method, memo}
 
       addExpense: (payload) =>

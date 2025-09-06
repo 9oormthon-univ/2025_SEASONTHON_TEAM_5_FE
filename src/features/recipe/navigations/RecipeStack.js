@@ -5,6 +5,7 @@ import RecipeScreen from '../screens/RecipeScreen';
 import ReceiptScanScreen from '../screens/ReceiptScanScreen';
 import IngredientAddScreen from '../screens/IngredientAddScreen';
 import FridgePutScreen from '../screens/FridgePutScreen';
+import MyIngredientsGrid from '../components/MyIngredientsGrid'; // ✅ 추가
 
 const Stack = createNativeStackNavigator();
 
@@ -15,6 +16,7 @@ export default function RecipeStack() {
       <Stack.Screen name="ReceiptScan" component={ReceiptScanScreen} />
       <Stack.Screen name="IngredientAdd" component={IngredientAddScreen} />
       <Stack.Screen name="FridgePut" component={FridgePutScreen} />
+      <Stack.Screen name="MyIngredients" component={MyIngredientsGrid} />
     </Stack.Navigator>
   );
 }
