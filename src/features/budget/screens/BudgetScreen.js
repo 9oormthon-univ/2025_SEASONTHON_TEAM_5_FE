@@ -8,7 +8,7 @@ import GotoRecipe from "../components/GotoRecipe";
 
 export default function BudgetScreen() {
   return (
-    <SafeAreaView style={styles.safe} edges={["top"]}>
+    <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
         <BudgetHeader />
         <BudgetSetup />
@@ -21,6 +21,11 @@ export default function BudgetScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  container: { paddingHorizontal: 16, paddingBottom: 24, backgroundColor: "#FFFFFF" },
+  safe: { flex: 1, backgroundColor: "#F8FAFC" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#F8FAFC", 
+    paddingHorizontal: 16, 
+    paddingTop: 8 
+  },
 });
