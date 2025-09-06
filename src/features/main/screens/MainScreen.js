@@ -3,23 +3,27 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { ScrollView, View, StyleSheet } from "react-native";
 import MainHeader from "../components/MainHeader";
 import MonthSummary from "../components/MonthSummary";
-import RecentExpenses from "../components/RecentExpenses";
+// import RecentExpenses from "../components/RecentExpenses";
 import useMonthlyBudget from "../hooks/useMonthlyBudget";
-import { useNavigation } from "@react-navigation/native";
+// import { useNavigation } from "@react-navigation/native";
+// import BudgetSetup from "../../budget/components/BudgetSetup";
+import MonthlyExpenseChart from "../components/MonthlyExpenseChart";
 
 export default function MainScreen() {
-  const nav = useNavigation();
+  //const nav = useNavigation();
   const { monthTotal, remain, recent } = useMonthlyBudget();
 
   return (
     <SafeAreaView style={styles.safe}>
       <ScrollView contentContainerStyle={styles.container}>
-        <MainHeader
+        <MainHeader />
+        {/* <MainHeader
           onAdd={() => nav.navigate("메인화면", { screen: "AddExpense" })}
-        />
+        /> */}
         <View style={{ height: 6 }} />
         <MonthSummary total={monthTotal} remain={remain} />
-        <RecentExpenses items={recent} />
+        {/* <RecentExpenses items={recent} /> */}
+        <MonthlyExpenseChart />
         <View style={{ height: 24 }} />
       </ScrollView>
     </SafeAreaView>

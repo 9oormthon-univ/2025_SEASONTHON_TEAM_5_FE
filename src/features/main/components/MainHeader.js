@@ -1,18 +1,20 @@
 import React from "react";
-import { View, Text, Image, Pressable, StyleSheet } from "react-native";
-import Ionicons from "@expo/vector-icons/Ionicons";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { colors } from "../../../theme/colors";
 import Logo from "../../../assets/images/logo.png";
 import { HEADER_HEIGHT, HEADER_HORIZONTAL_PADDING } from "../../../theme/styles";
 
-export default function MainHeader({ onAdd }) {
+export default function MainHeader() {
   return (
     <View style={styles.container}>
+      {/* 왼쪽 로고 */}
       <Image source={Logo} style={styles.logo} resizeMode="contain" />
+
+      {/* 중앙 제목 */}
       <Text style={styles.title}>메인화면</Text>
-      <Pressable onPress={onAdd} style={styles.iconBox} hitSlop={8}>
-        <Ionicons name="add" size={24} color={colors.text} />
-      </Pressable>
+
+      {/* 오른쪽 스페이서 */}
+      <View style={styles.spacer} />
     </View>
   );
 }
@@ -28,6 +30,10 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   logo: { width: 32, height: 32 },
-  title: { fontSize: 18, fontWeight: "800", color: colors.text },
-  iconBox: { width: 32, height: 32, alignItems: "center", justifyContent: "center" },
+  title: {
+    fontSize: 18,
+    fontWeight: "800",
+    color: colors.text,
+  },
+  spacer: { width: 32, height: 32 },
 });
