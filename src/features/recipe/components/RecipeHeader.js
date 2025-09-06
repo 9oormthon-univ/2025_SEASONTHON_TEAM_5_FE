@@ -1,17 +1,31 @@
+// 📂 src/features/recipe/components/RecipeHeader.js
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, Image, StyleSheet } from "react-native";
 import { colors } from "../../../theme/colors";
+import Logo from "../../../assets/images/logo.png";
+import { HEADER_HEIGHT, HEADER_HORIZONTAL_PADDING } from "../../../theme/styles";
 
 export default function RecipeHeader() {
   return (
-    <View style={styles.row}>
+    <View style={styles.container}>
+      <Image source={Logo} style={styles.logo} resizeMode="contain" />
       <Text style={styles.title}>레시피 추천</Text>
-      {/* 필요하면 오른쪽에 설정/추가 버튼 붙이면 됨 */}
+      <View style={styles.spacer} />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "center", marginBottom: 12, marginTop:6 },
+  container: {
+    height: HEADER_HEIGHT,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: HEADER_HORIZONTAL_PADDING,
+    marginTop: 6,
+    marginBottom: 12,
+  },
+  logo: { width: 32, height: 32 },
   title: { fontSize: 18, fontWeight: "800", color: colors.text },
+  spacer: { width: 32, height: 32 },
 });

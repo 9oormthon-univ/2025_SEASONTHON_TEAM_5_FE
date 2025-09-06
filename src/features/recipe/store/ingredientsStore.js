@@ -37,6 +37,24 @@ export const useIngredientsStore = create(
 
       // ✅ 전체 삭제
       clearAll: () => set({ ingredients: [] }),
+
+      // 레시피에 필요한 재료 차감
+      consumeIngredients: (neededList) => {
+        // neededList: [{ name: string, qty: "200g"|"1개"... }, ...]
+        set((s) => {
+          const updated = s.ingredients.map((ing) => {
+            const need = neededList.find((n) => n.name === ing.name);
+            if (!need) return ing;
+            // 숫자만 비교
+            const haveNum = parseInt(ing.qty, 10);
+            const needNum = parseInt(need.qty, 10);
+            const remain = Math.max(haveNum - needNum, 0);
+            const unit = ing.qty.replace(/[0-9]/g, "");
+            return { ...ing, qty: `${remain}${unit}` };
+          });
+          return { ingredients: updated };
+        });
+      },
     }),
     {
       name: "ingredients_store",

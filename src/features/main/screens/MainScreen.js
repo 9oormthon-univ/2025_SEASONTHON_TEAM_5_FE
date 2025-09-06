@@ -27,6 +27,11 @@ export default function MainScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFFFFF" },
-  container: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 32, backgroundColor: "#FFFFFF" },
+  safe: { flex: 1, backgroundColor: "#F8FAFC" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#F8FAFC", 
+    paddingHorizontal: 16, 
+    paddingTop: 8 
+  },
 });
