@@ -10,6 +10,7 @@ import {
   UIManager,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { LinearGradient } from "expo-linear-gradient";
 
 import RecipeHeader from "../components/RecipeHeader";
 import ModeSwitch from "../components/ModeSwitch";
@@ -46,10 +47,28 @@ export default function RecipeScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* 1) 그라데이션 배경 */}
+      <LinearGradient
+        colors={['#E8F5E9', '#FFFFFF']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={StyleSheet.absoluteFill}
+      />
+
+      {/* 2) 원 패턴 */}
+      <View style={styles.backgroundPattern}>
+        <View style={[styles.circle, styles.circle1]} />
+        <View style={[styles.circle, styles.circle2]} />
+        <View style={[styles.circle, styles.circle3]} />
+        <View style={[styles.circle, styles.circle4]} />
+        <View style={[styles.circle, styles.circle5]} />
+        <View style={[styles.circle, styles.circle6]} />
+      </View>
+
+      {/* 3) 기존 콘텐츠 */}
       <View style={styles.container}>
         <RecipeHeader />
         <ModeSwitch mode={mode} onChange={onChangeMode} />
-
         {mode === "register" ? (
           <ScrollView
             contentContainerStyle={{ paddingBottom: 24 }}
@@ -63,14 +82,10 @@ export default function RecipeScreen() {
                 Alert.alert("직접 입력", "나중에 재료 입력 화면으로 이동")
               }
             />
-
             <RecommendCard
               hasIngredients={ingredients.length > 0}
-              onRecommend={() =>
-                navigation.navigate("RecommendRecipes")
-              }
+              onRecommend={() => navigation.navigate("RecommendRecipes")}
             />
-
             <ExpiringIngredients
               items={expiringSoon}
               onSeeAll={() => onChangeMode("mine")}
@@ -85,11 +100,30 @@ export default function RecipeScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#FFFFFF" },
+  safe: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
+  backgroundPattern: {
+    ...StyleSheet.absoluteFillObject,
+    zIndex: 0,
+  },
+  circle: {
+    position: "absolute",
+    borderRadius: 1000,
+    backgroundColor: "rgba(76, 175, 80, 0.08)",
+  },
+  circle1: { width: 200, height: 200, top: -50, right: -80 },
+  circle2: { width: 150, height: 150, top: 100, left: -60 },
+  circle3: { width: 120, height: 120, top: 300, right: -40 },
+  circle4: { width: 180, height: 180, bottom: 200, left: -70 },
+  circle5: { width: 100, height: 100, bottom: 100, right: -30 },
+  circle6: { width: 160, height: 160, bottom: -50, right: 20 },
   container: {
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 8,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "transparent",
+    zIndex: 1,
   },
 });
