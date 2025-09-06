@@ -1,3 +1,4 @@
+// 📂 src/features/recipe/screens/IngredientAddScreen.js
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -13,31 +14,33 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import { colors } from "../../../theme/colors";
 import { useIngredientsStore } from "../store/ingredientsStore";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { Picker } from "@react-native-picker/picker";
+import ModalSelector from "react-native-modal-selector";
 
-// ✅ 단위 옵션
+// 단위 리스트
 const UNITS = ["개", "통", "봉지", "g", "kg", "ml", "L"];
 
 export default function IngredientAddScreen() {
   const navigation = useNavigation();
   const route = useRoute();
-  const { ingredient } = route.params || {}; // 수정 모드면 ingredient 전달됨
+  const { ingredient } = route.params || {};
 
   const addIngredient = useIngredientsStore((s) => s.addIngredient);
   const updateIngredient = useIngredientsStore((s) => s.updateIngredient);
 
-  // ✅ 상태
   const [name, setName] = useState("");
   const [qty, setQty] = useState("");
-  const [unit, setUnit] = useState("개"); // 기본 단위
+  const [unit, setUnit] = useState("개");
   const [expiry, setExpiry] = useState("");
   const [datePickerVisible, setDatePickerVisible] = useState(false);
 
   useEffect(() => {
     if (ingredient) {
       setName(ingredient.name);
-      setQty(ingredient.qty?.replace(/[^0-9]/g, "") || "");
-      setUnit(ingredient.qty?.replace(/[0-9]/g, "") || "개");
+      const numberPart = ingredient.qty?.match(/[0-9]+/)?.[0] || "";
+      let unitPart = ingredient.qty?.replace(/[0-9]/g, "").trim();
+      if (!unitPart || !UNITS.includes(unitPart)) unitPart = "개";
+      setQty(numberPart);
+      setUnit(unitPart);
       setExpiry(ingredient.expiry);
     }
   }, [ingredient]);
@@ -49,9 +52,7 @@ export default function IngredientAddScreen() {
 
   const onSave = () => {
     if (!name.trim()) return Alert.alert("재료명을 입력하세요");
-
     const finalQty = `${qty}${unit}`;
-
     if (ingredient) {
       updateIngredient(ingredient.id, { name, qty: finalQty, expiry });
       Alert.alert("수정 완료", `${name} / ${finalQty} / ${expiry}`);
@@ -59,13 +60,11 @@ export default function IngredientAddScreen() {
       addIngredient({ name, qty: finalQty, expiry });
       Alert.alert("등록 완료", `${name} / ${finalQty} / ${expiry}`);
     }
-
     closeToRecipe();
   };
 
-  // ✅ 달력 선택 처리
   const handleConfirmDate = (date) => {
-    setExpiry(date.toISOString().slice(0, 10)); // YYYY-MM-DD
+    setExpiry(date.toISOString().slice(0, 10));
     setDatePickerVisible(false);
   };
 
@@ -88,44 +87,45 @@ export default function IngredientAddScreen() {
           placeholder="재료명"
           value={name}
           onChangeText={setName}
-          style={styles.input}
+          style={[styles.input, styles.leftText]}
           placeholderTextColor={colors.accent}
         />
 
-        {/* 수량 + 단위 (카드형) */}
+        {/* 수량 + 단위 */}
         <View style={styles.inputCard}>
           <TextInput
             placeholder="수량"
             value={qty}
             keyboardType="numeric"
             onChangeText={setQty}
-            style={styles.qtyInput}
+            style={[styles.qtyInput, styles.leftText]}
             placeholderTextColor={colors.accent}
           />
           <View style={styles.divider} />
-          <Picker
-            selectedValue={unit}
-            onValueChange={(val) => setUnit(val)}
-            style={styles.unitPicker}
-            dropdownIconColor={colors.text}
-          >
-            {UNITS.map((u) => (
-              <Picker.Item key={u} label={u} value={u} />
-            ))}
-          </Picker>
+
+          <View style={{ flex: 1 }}>
+            <ModalSelector
+              data={UNITS.map((u, idx) => ({ key: idx, label: u }))}
+              onChange={(option) => setUnit(option.label)}
+              cancelText="취소"
+              initValue={unit}
+              style={{ flex: 1 }}
+              selectStyle={styles.unitSelect}
+              //selectTextStyle={[styles.unitText, styles.leftText]}
+              selectTextStyle={StyleSheet.flatten([styles.unitText, styles.leftText])}
+            />
+          </View>
         </View>
 
-        {/* 유통기한 (달력) */}
+        {/* 유통기한 */}
         <Pressable
           style={[styles.input, { justifyContent: "center" }]}
           onPress={() => setDatePickerVisible(true)}
         >
-          <Text style={{ color: expiry ? colors.text : colors.accent }}>
+          <Text style={[styles.leftText, { color: expiry ? colors.text : colors.accent }]}>
             {expiry || "유통기한 선택"}
           </Text>
         </Pressable>
-
-        {/* Date Picker 모달 */}
         <DateTimePickerModal
           isVisible={datePickerVisible}
           mode="date"
@@ -133,7 +133,7 @@ export default function IngredientAddScreen() {
           onCancel={() => setDatePickerVisible(false)}
         />
 
-        {/* 버튼 */}
+        {/* 저장 버튼 */}
         <Pressable style={styles.addBtn} onPress={onSave}>
           <Text style={styles.addText}>
             {ingredient ? "수정" : "추가"}
@@ -147,6 +147,7 @@ export default function IngredientAddScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
   container: { flex: 1, paddingHorizontal: 16, backgroundColor: "#fff" },
+
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -154,7 +155,12 @@ const styles = StyleSheet.create({
     paddingTop: 4,
     paddingBottom: 12,
   },
-  headerTitle: { fontSize: 16, fontWeight: "800", color: colors.text },
+  headerTitle: {
+    fontSize: 16,
+    fontWeight: "800",
+    color: colors.text,
+  },
+
   input: {
     backgroundColor: colors.card,
     padding: 14,
@@ -163,7 +169,13 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#E5E7EB",
   },
-  // ✅ 수량 + 단위 카드형 스타일
+
+  // 왼쪽 정렬 공통
+  leftText: {
+    textAlign: "left",
+    color: colors.text,
+  },
+
   inputCard: {
     flexDirection: "row",
     alignItems: "center",
@@ -177,7 +189,6 @@ const styles = StyleSheet.create({
   qtyInput: {
     flex: 2,
     padding: 14,
-    textAlign: "center",
     color: colors.text,
   },
   divider: {
@@ -185,11 +196,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#E5E7EB",
     height: "100%",
   },
-  unitPicker: {
-    flex: 1,
-    height: 52,
-    color: colors.text,
+
+  unitSelect: {
+    borderWidth: 0,
+    backgroundColor: "transparent",
+    paddingHorizontal: 12,
+    justifyContent: "center",
+    height: 45,
   },
+  unitText: {
+    fontSize: 14,
+  },
+
   addBtn: {
     alignSelf: "flex-start",
     backgroundColor: "#22C55E",
@@ -198,5 +216,8 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginTop: 4,
   },
-  addText: { color: "#fff", fontWeight: "800" },
+  addText: {
+    color: "#fff",
+    fontWeight: "800",
+  },
 });

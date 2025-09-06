@@ -1,14 +1,17 @@
 import React from "react";
-import { View, Text, StyleSheet, Pressable, Alert } from "react-native";
+import { View, Text, StyleSheet, Pressable, Alert, Dimensions } from "react-native";
 import { colors } from "../../../theme/colors";
 import { useIngredientsStore } from "../store/ingredientsStore";
 import { useNavigation } from "@react-navigation/native";
+
+const { width } = Dimensions.get("window");
+const CARD_WIDTH = (width - 16 * 2 - 10) / 2; 
+// 좌우 패딩 16*2, 열 간격 10을 고려해서 반 나눈 값
 
 export default function IngredientCard({ item }) {
   const removeIngredient = useIngredientsStore((s) => s.removeIngredient);
   const navigation = useNavigation();
 
-  // ✅ 삭제 확인
   const confirmDelete = () => {
     Alert.alert(
       "삭제 확인",
@@ -20,7 +23,6 @@ export default function IngredientCard({ item }) {
     );
   };
 
-  // ✅ 남은 일수 계산 (D-2, D-3)
   const dDay = (() => {
     if (!item.expiry) return "-";
     const today = new Date();
@@ -29,19 +31,16 @@ export default function IngredientCard({ item }) {
     return diff >= 0 ? `D-${diff}` : `만료`;
   })();
 
-  // ✅ 수정하기 → IngredientAddScreen으로 이동, 기존 값 전달
   const handleEdit = () => {
     navigation.navigate("IngredientAdd", { ingredient: item });
   };
 
   return (
     <View style={styles.card}>
-      {/* 재료 정보 */}
       <Text style={styles.name}>{item.name}</Text>
       <Text style={styles.qty}>{item.qty || "-"}</Text>
       <Text style={styles.expiry}>{dDay}</Text>
 
-      {/* 버튼 영역 */}
       <View style={styles.actions}>
         <Pressable style={styles.actionBtn} onPress={confirmDelete}>
           <Text style={styles.actionText}>삭제하기</Text>
@@ -56,7 +55,7 @@ export default function IngredientCard({ item }) {
 
 const styles = StyleSheet.create({
   card: {
-    flex: 1,
+    width: CARD_WIDTH,   // ✅ 고정 너비
     backgroundColor: "#fff",
     borderRadius: 12,
     borderWidth: 1,
