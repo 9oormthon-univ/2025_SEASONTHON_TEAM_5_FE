@@ -1,18 +1,14 @@
-// 📂 src/features/budget/screens/BudgetSetup.js
+// src/features/budget/screens/BudgetSetup.js
 import React, { useState } from "react";
 import { View, Text, TextInput, StyleSheet, Pressable, Alert } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
-import { useBudgetStore } from "../store/budgetStore";
 import { colors } from "../../../theme/colors";
+import { useBudgetCreate } from "../hooks/useBudgetCreate";
 
 export default function BudgetSetup() {
-  const monthlyBudget = useBudgetStore((s) => s.monthlyBudget);
-  const setMonthlyBudget = useBudgetStore((s) => s.setMonthlyBudget);
-  const setPeriodDays = useBudgetStore((s) => s.setPeriodDays);
+  const { loading, error, setError, createBudget, buildPayloadFromUI } = useBudgetCreate();
 
-  const [budgetInput, setBudgetInput] = useState(
-    monthlyBudget ? String(monthlyBudget) : ""
-  );
+  const [budgetInput, setBudgetInput] = useState("");
 
   // 📌 날짜 상태
   const [startDate, setStartDate] = useState(null);
@@ -22,21 +18,25 @@ export default function BudgetSetup() {
   const [isStartPickerVisible, setStartPickerVisible] = useState(false);
   const [isEndPickerVisible, setEndPickerVisible] = useState(false);
 
-  const onSave = () => {
-    const b = Number((budgetInput || "").replaceAll(",", ""));
-    if (!b || b <= 0) return Alert.alert("예산 금액을 입력하세요");
-    if (!startDate || !endDate) return Alert.alert("시작일과 마감일을 선택하세요");
+  const onSave = async () => {
+    setError("");
 
-    setMonthlyBudget(b);
+    const payload = buildPayloadFromUI(budgetInput, startDate, endDate);
+    console.log("🧾 [UI] Budget payload:", payload);
 
-    // 📌 기간 계산 (일수)
-    const diffDays =
-      Math.ceil((endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
-    setPeriodDays(diffDays);
+    const result = await createBudget(payload);
+    if (!result) {
+      return Alert.alert("저장 실패", error || "다시 시도해주세요.");
+    }
+
+    // 일수 계산은 안내용으로만 표시
+    const s = new Date(payload.startAt);
+    const e = new Date(payload.endAt);
+    const diffDays = Math.ceil((e - s) / (1000 * 60 * 60 * 24)) + 1;
 
     Alert.alert(
       "저장됨",
-      `예산: ${b}원\n기간: ${diffDays}일\n(${startDate.toLocaleDateString()} ~ ${endDate.toLocaleDateString()})`
+      `예산: ${payload.amount.toLocaleString()}원\n기간: ${diffDays}일\n(${s.toLocaleDateString()} ~ ${e.toLocaleDateString()})`
     );
   };
 
@@ -87,9 +87,15 @@ export default function BudgetSetup() {
       />
 
       {/* 저장 버튼 */}
-      <Pressable style={styles.saveBtn} onPress={onSave}>
-        <Text style={styles.saveText}>저장하기</Text>
+      <Pressable
+        style={[styles.saveBtn, loading && { opacity: 0.7 }]}
+        onPress={onSave}
+        disabled={loading}
+      >
+        <Text style={styles.saveText}>{loading ? "저장 중..." : "저장하기"}</Text>
       </Pressable>
+
+      {!!error && <Text style={{ color: "#ef4444", marginTop: 8 }}>{error}</Text>}
     </View>
   );
 }
