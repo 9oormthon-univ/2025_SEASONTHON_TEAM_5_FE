@@ -1,7 +1,7 @@
+// src/features/main/components/MonthlyExpenseChart.js
 import React from "react";
 import { View, Text as RNText, StyleSheet, Dimensions, ScrollView } from "react-native";
-import { BarChart, XAxis, Grid } from "react-native-svg-charts";
-import { Text } from "react-native-svg";
+import Svg, { Rect, Text as SvgText, Line } from "react-native-svg";
 import { colors } from "../../../theme/colors";
 import { HEADER_HORIZONTAL_PADDING } from "../../../theme/styles";
 
@@ -13,13 +13,13 @@ const chartHeight = 220;
 const rawData = [120000, 90000, 150000, 130000, 95000, 110000];
 const labels = ["4월", "5월", "6월", "7월", "8월", "9월"];
 
-// 색상 보간 함수
+// 색상 보간 유틸
 function hexToRgb(hex) {
   const [, r, g, b] = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   return { r: parseInt(r, 16), g: parseInt(g, 16), b: parseInt(b, 16) };
 }
 function rgbToHex({ r, g, b }) {
-  const toHex = n => n.toString(16).padStart(2, '0');
+  const toHex = (n) => n.toString(16).padStart(2, "0");
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 }
 function interpolateColor(start, end, factor) {
@@ -32,71 +32,103 @@ function interpolateColor(start, end, factor) {
 }
 
 // 색상 범위
-const startColor = '#E8F2ED';
-const endColor = '#518F69';
+const startColor = "#E8F2ED";
+const endColor = "#518F69";
 
-// 최대값 계산
+// 최대값
 const maxValue = Math.max(...rawData);
 
-// BarChart에 넘길 데이터 배열: 각 항목에 value와 svg 속성 추가
-const data = rawData.map(value => ({
-  value,
-  svg: { fill: interpolateColor(startColor, endColor, value / maxValue) }
-}));
-
 // 바 너비/간격 설정
-const spacingInner = 0.4;
-const barTotalWidth = screenWidth / data.length;
+const spacingInner = 0.4; // 0~1 (값이 클수록 바 사이 간격 커짐)
+const barTotalWidth = screenWidth / rawData.length;
 const barWidth = barTotalWidth * (1 - spacingInner);
-const contentInsetValue = (barTotalWidth - barWidth) / 2;
+const sidePad = (barTotalWidth - barWidth) / 2;
 
-// Bar 위에 값 표시
-const Labels = ({ x, y, bandwidth, data }) => (
-  data.map((item, index) => (
-    <Text
-      key={index}
-      x={x(index) + bandwidth / 2}
-      y={y(item.value) - 8}
-      fontSize={12}
-      fill={colors.text}
-      alignmentBaseline="middle"
-      textAnchor="middle"
-    >
-      {item.value.toLocaleString()}
-    </Text>
-  ))
-);
+// 차트 패딩(상단/하단)
+const padTop = 20;
+const padBottom = 28;
+const innerHeight = chartHeight - padTop - padBottom;
 
 export default function MonthlyExpenseChart() {
   return (
     <View style={styles.container}>
       <RNText style={styles.title}>최근 6개월 지출 현황</RNText>
+
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: HEADER_HORIZONTAL_PADDING }}
       >
-        <View style={{ width: screenWidth }}>
-          <BarChart
-            style={{ height: chartHeight, width: screenWidth }}
-            data={data}
-            yAccessor={({ item }) => item.value}
-            contentInset={{ top: 20, bottom: 20, left: contentInsetValue, right: contentInsetValue }}
-            spacingInner={spacingInner}
-            gridMin={0}
-          >
-            <Grid />
-            <Labels />
-          </BarChart>
+        <Svg width={screenWidth} height={chartHeight}>
+          {/* 그리드 라인 */}
+          {Array.from({ length: 5 }).map((_, i) => {
+            const y = padTop + (innerHeight * i) / 4;
+            return (
+              <Line
+                key={`grid-${i}`}
+                x1={0}
+                x2={screenWidth}
+                y1={y}
+                y2={y}
+                stroke={colors.border ?? "#e6e6e6"}
+                strokeWidth={1}
+              />
+            );
+          })}
 
-          <XAxis
-            style={{ marginTop: 8, width: screenWidth }}
-            data={data}
-            formatLabel={(_, index) => labels[index]}
-            contentInset={{ left: contentInsetValue, right: contentInsetValue }}
-            svg={{ fontSize: 12, fill: colors.sub }}
-          />
-        </View>
+          {/* 막대 + 값 라벨 */}
+          {rawData.map((value, index) => {
+            const factor = value / maxValue;
+            const barH = Math.max(2, innerHeight * factor);
+            const x = index * barTotalWidth + sidePad;
+            const y = padTop + innerHeight - barH;
+            const fill = interpolateColor(startColor, endColor, Math.min(1, factor));
+
+            return (
+              <React.Fragment key={`bar-${index}`}>
+                <Rect
+                  x={x}
+                  y={y}
+                  width={barWidth}
+                  height={barH}
+                  rx={6}
+                  ry={6}
+                  fill={fill}
+                />
+                {/* 값 라벨 */}
+                <SvgText
+                  x={x + barWidth / 2}
+                  y={y - 6}
+                  fontSize={12}
+                  fill={colors.text}
+                  alignmentBaseline="middle"
+                  textAnchor="middle"
+                >
+                  {value.toLocaleString()}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
+
+          {/* X축 라벨 */}
+          {labels.map((label, index) => {
+            const x = index * barTotalWidth + sidePad + barWidth / 2;
+            const y = chartHeight - padBottom + 14;
+            return (
+              <SvgText
+                key={`xlabel-${index}`}
+                x={x}
+                y={y}
+                fontSize={12}
+                fill={colors.sub}
+                alignmentBaseline="middle"
+                textAnchor="middle"
+              >
+                {label}
+              </SvgText>
+            );
+          })}
+        </Svg>
       </ScrollView>
     </View>
   );

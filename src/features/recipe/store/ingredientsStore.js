@@ -38,6 +38,12 @@ export const useIngredientsStore = create(
       // ✅ 전체 삭제
       clearAll: () => set({ ingredients: [] }),
 
+      // ✅ 서버에서 재료 목록 로드
+      loadFromServer: (serverIngredients) =>
+        set(() => ({
+          ingredients: serverIngredients || [],
+        })),
+
       // 레시피에 필요한 재료 차감
       consumeIngredients: (neededList) => {
         // neededList: [{ name: string, qty: "200g"|"1개"... }, ...]

@@ -17,12 +17,12 @@ const toISODate = (v) => {
   return new Date(`${v}T00:00:00`).toISOString();
 };
 
-// fetch + 타임아웃 + 로그
-async function fetchWithTimeout(url, init = {}, timeoutMs = 10000) {
+// fetch + 타임아웃 + 로그 (타임아웃 시간 증가)
+async function fetchWithTimeout(url, init = {}, timeoutMs = 30000) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    console.log("🌐 fetch", url, init?.method || "GET");
+    console.log("🌐 fetch", url, init?.method || "GET", `(timeout: ${timeoutMs}ms)`);
     const res = await fetch(url, { ...init, signal: controller.signal });
     const text = await res.text();
     let data = null;
@@ -138,7 +138,8 @@ export function useIngredientCreate() {
       }
 
       console.log("✅ [INGREDIENT] Create Success");
-      return data;
+      // 서버 응답이 비어있어도 성공으로 처리
+      return data || { success: true };
     } catch (e) {
       let msg = e?.message || "재료 등록 실패";
       if (e?.name === "AbortError") msg = "요청 시간 초과(네트워크 지연)";

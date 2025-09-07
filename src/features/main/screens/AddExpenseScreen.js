@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { useExpenseStore } from "../store/expenseStore";
 import { colors } from "../../../theme/colors";
-import { nanoid } from "nanoid/non-secure"; // 파일 상단에 추가
+import { nanoid } from "nanoid/non-secure";
 
 export default function AddExpenseScreen() {
   const navigation = useNavigation();
@@ -31,7 +31,13 @@ export default function AddExpenseScreen() {
   const date = presetDate || new Date().toISOString().slice(0, 10);
   const [method, setMethod] = useState("신용");
 
-  const goMain = () => navigation.navigate("메인화면", { screen: "MainHome" });
+  const goMain = () => {
+    // 메인 화면으로 돌아가면서 강제 새로고침
+    navigation.navigate("메인화면", { 
+      screen: "MainHome",
+      params: { refresh: Date.now() } // 강제 새로고침을 위한 타임스탬프
+    });
+  };
 
   // 총 금액 계산
   const totalAmount = categories.reduce(
@@ -64,25 +70,36 @@ export default function AddExpenseScreen() {
     setNewCategory("");
   };
 
-  const onSubmit = () => {
+  const onSubmit = async () => {
     if (totalAmount <= 0) return Alert.alert("금액을 입력하세요");
 
-    categories.forEach((c) => {
-      if (c.amount && Number(c.amount) > 0) {
-        addExpense({
-          id: nanoid(),               // ✅ 고유 ID 추가
-          title: c.usage || c.name,   // 사용처 있으면 title로
-          category: c.name,           // 카테고리는 분류
-          amount: Number(c.amount),
-          date: new Date(date).toISOString(),
-          method,
-          memo: "",
-        });
-      }
-  });
+    try {
+      // 로컬 스토어에만 저장 (서버 API 제거)
+      categories.forEach((c) => {
+        if (c.amount && Number(c.amount) > 0) {
+          addExpense({
+            id: nanoid(),               // ✅ 고유 ID 추가
+            title: c.usage || c.name,   // 사용처 있으면 title로
+            category: c.name,           // 카테고리는 분류
+            amount: Number(c.amount),
+            date: new Date(date).toISOString(),
+            method,
+            memo: "",
+          });
+        }
+      });
 
-  goMain();
-};
+      console.log("✅ [EXPENSE] Local store updated with", categories.length, "items");
+    } catch (e) {
+      console.error("❌ [EXPENSE] Save failed:", e);
+      Alert.alert("저장 실패", "지출 내역 저장에 실패했습니다.");
+      return;
+    }
+
+    Alert.alert("저장 완료", "지출 내역이 저장되었습니다.", [
+      { text: "확인", onPress: goMain }
+    ]);
+  };
 
 
   return (
@@ -175,7 +192,10 @@ export default function AddExpenseScreen() {
         </View>
 
         {/* 추가 버튼 */}
-        <Pressable style={styles.addBtn} onPress={onSubmit}>
+        <Pressable 
+          style={styles.addBtn} 
+          onPress={onSubmit}
+        >
           <Text style={styles.addBtnText}>추가</Text>
         </Pressable>
       </View>
@@ -278,4 +298,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   addBtnText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  errorText: {
+    color: "#ef4444",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 8,
+  },
 });

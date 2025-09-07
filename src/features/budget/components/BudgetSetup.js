@@ -5,7 +5,7 @@ import DateTimePickerModal from "react-native-modal-datetime-picker";
 import { colors } from "../../../theme/colors";
 import { useBudgetCreate } from "../hooks/useBudgetCreate";
 
-export default function BudgetSetup() {
+export default function BudgetSetup({ onClose }) {
   const { loading, error, setError, createBudget, buildPayloadFromUI } = useBudgetCreate();
 
   const [budgetInput, setBudgetInput] = useState("");
@@ -36,7 +36,16 @@ export default function BudgetSetup() {
 
     Alert.alert(
       "저장됨",
-      `예산: ${payload.amount.toLocaleString()}원\n기간: ${diffDays}일\n(${s.toLocaleDateString()} ~ ${e.toLocaleDateString()})`
+      `예산: ${payload.amount.toLocaleString()}원\n기간: ${diffDays}일\n(${s.toLocaleDateString()} ~ ${e.toLocaleDateString()})`,
+      [
+        {
+          text: "확인",
+          onPress: () => {
+            // 모달 닫기
+            if (onClose) onClose();
+          }
+        }
+      ]
     );
   };
 

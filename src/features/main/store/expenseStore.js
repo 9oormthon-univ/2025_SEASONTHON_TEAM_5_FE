@@ -24,7 +24,11 @@ export const useExpenseStore = create(
         set((s) => ({ expenses: s.expenses.filter((e) => e.id !== id) })),
 
       setBudget: (v) => set({ budget: v }),
-      clearAll: () => set({ expenses: [] }),
+      clearAll: () => set({ 
+        budget: 2000000,  // 기본값으로 리셋
+        expenses: [] 
+      }),
+
     }),
     {
       name: "what_to_eat_today_store",

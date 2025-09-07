@@ -17,6 +17,8 @@ import DateTimePickerModal from "react-native-modal-datetime-picker"; // iOS용 
 import RNDateTimePicker from "@react-native-community/datetimepicker"; // Android 네이티브
 import ModalSelector from "react-native-modal-selector";
 import { useIngredientCreate } from "../hooks/useIngredientCreate";
+import { useIngredientList } from "../hooks/useIngredientList";
+import { useIngredientsStore } from "../store/ingredientsStore";
 
 // 단위 리스트
 const UNITS = ["개", "통", "봉지", "g", "kg", "ml", "L"];
@@ -34,6 +36,10 @@ export default function IngredientAddScreen() {
     createIngredient,
     buildPayloadFromUI,
   } = useIngredientCreate();
+
+  // 재료 목록 갱신 훅
+  const { fetchIngredients } = useIngredientList();
+  const { loadFromServer } = useIngredientsStore();
 
   const [name, setName] = useState("");
   const [qty, setQty] = useState("");
@@ -57,6 +63,10 @@ export default function IngredientAddScreen() {
   const closeToRecipe = () => {
     if (navigation.canGoBack()) navigation.goBack();
     else navigation.navigate("RecipeHome");
+  };
+
+  const goToMain = () => {
+    navigation.navigate("메인화면", { screen: "MainHome" });
   };
 
   // expiry(YYYY-MM-DD or ISO) → Date
@@ -97,15 +107,40 @@ export default function IngredientAddScreen() {
     console.log("🧾 [UI] Build payload from inputs:", payload);
 
     const result = await createIngredient(payload);
-    if (!result) {
+    if (result === null || result === undefined) {
+      // createIngredient가 실패한 경우에만 에러 메시지 표시
+      console.log("❌ [UI] Create failed, showing error:", error);
       return Alert.alert("등록 실패", error || "다시 시도해주세요.");
     }
 
-    const dispName = result?.name ?? name;
-    const dispQty = `${result?.quantity ?? Number(qty)}${result?.unit ?? unit}`;
-    const dispExp = (result?.expirationDate || expiry || "").slice(0, 10);
-    Alert.alert("등록 완료", `${dispName} / ${dispQty} / ${dispExp}`);
-    closeToRecipe();
+    console.log("✅ [UI] Create result:", result);
+
+    // 성공 시 에러 상태 초기화
+    setError("");
+    console.log("✅ [UI] Create success, clearing error state");
+
+    // 재료 추가 성공 시 목록 갱신
+    try {
+      const serverIngredients = await fetchIngredients();
+      if (serverIngredients.length > 0) {
+        loadFromServer(serverIngredients);
+        console.log("🔄 [INGREDIENT] List refreshed after create");
+      }
+    } catch (e) {
+      console.warn("재료 목록 갱신 실패:", e);
+    }
+
+    // 성공 알림 후 메인 화면으로 이동
+    Alert.alert(
+      "등록 완료", 
+      "재료가 성공적으로 추가되었습니다.",
+      [
+        {
+          text: "확인",
+          onPress: goToMain
+        }
+      ]
+    );
   };
 
   // ModalSelector가 배열 스타일 미허용 → flatten으로 객체 전달
