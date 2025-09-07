@@ -5,9 +5,7 @@ import Svg, { Rect, Text as SvgText, Line } from "react-native-svg";
 import { colors } from "../../../theme/colors";
 import { HEADER_HORIZONTAL_PADDING } from "../../../theme/styles";
 
-// 화면 너비 계산
-const screenWidth = Dimensions.get("window").width - HEADER_HORIZONTAL_PADDING * 2;
-const chartHeight = 220;
+const screenWidth = Dimensions.get("window").width - HEADER_HORIZONTAL_PADDING * 2 + 30; // 30px 추가
 
 // 더미 데이터: 최근 6개월 지출액
 const rawData = [120000, 90000, 150000, 130000, 95000, 110000];
@@ -43,6 +41,9 @@ const spacingInner = 0.4; // 0~1 (값이 클수록 바 사이 간격 커짐)
 const barTotalWidth = screenWidth / rawData.length;
 const barWidth = barTotalWidth * (1 - spacingInner);
 const sidePad = (barTotalWidth - barWidth) / 2;
+
+// 차트 높이 설정
+const chartHeight = 240;
 
 // 차트 패딩(상단/하단)
 const padTop = 20;
@@ -137,13 +138,19 @@ export default function MonthlyExpenseChart() {
 const styles = StyleSheet.create({
   container: {
     marginVertical: 20,
-    backgroundColor: colors.background,
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   title: {
     fontSize: 16,
     fontWeight: "700",
-    color: colors.text,
-    marginBottom: 12,
-    paddingHorizontal: HEADER_HORIZONTAL_PADDING,
+    color: '#1f2937',
+    marginBottom: 16,
   },
 });
